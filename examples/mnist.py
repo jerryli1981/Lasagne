@@ -22,6 +22,8 @@ import numpy as np
 import theano
 import theano.tensor as T
 
+sys.path.append('../../Lasagne')
+
 import lasagne
 
 
