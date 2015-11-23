@@ -9,14 +9,9 @@ import numpy as np
 import theano.typed_list
 
 __all__ = [
-    "AbsLayer",
     "RecursiveLayer",
 ]
 
-
-class AbsLayer(Layer):
-    def get_output_for(self, input, **kwargs):
-        return T.abs_(input)
 
 
 class RecursiveLayer(Layer):

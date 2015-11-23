@@ -10,6 +10,7 @@ __all__ = [
     "concat",
     "ElemwiseMergeLayer",
     "ElemwiseSumLayer",
+    "AbsSubLayer",
 ]
 
 
@@ -400,3 +401,38 @@ class ElemwiseSumLayer(ElemwiseMergeLayer):
 
         # pass scaled inputs to the super class for summing
         return super(ElemwiseSumLayer, self).get_output_for(inputs, **kwargs)
+
+class AbsSubLayer(MergeLayer):
+
+    def __init__(self, incomings, merge_function, cropping=None, **kwargs):
+        super(AbsSubLayer, self).__init__(incomings, **kwargs)
+        self.merge_function = merge_function
+        self.cropping = cropping
+
+    def get_output_shape_for(self, input_shapes):
+        input_shapes = autocrop_array_shapes(input_shapes, self.cropping)
+        # Infer the output shape by grabbing, for each axis, the first
+        # input size that is not `None` (if there is any)
+        output_shape = tuple(next((s for s in sizes if s is not None), None)
+                             for sizes in zip(*input_shapes))
+
+        def match(shape1, shape2):
+            return (len(shape1) == len(shape2) and
+                    all(s1 is None or s2 is None or s1 == s2
+                        for s1, s2 in zip(shape1, shape2)))
+
+        # Check for compatibility with inferred output shape
+        if not all(match(shape, output_shape) for shape in input_shapes):
+            raise ValueError("Mismatch: not all input shapes are the same")
+        return output_shape
+
+    def get_output_for(self, inputs, **kwargs):
+        inputs = autocrop(inputs, self.cropping)
+        output = None
+        for input in inputs:
+            if output is not None:
+                output = self.merge_function(output, input)
+            else:
+                output = input
+        return T.abs_(output)
+
