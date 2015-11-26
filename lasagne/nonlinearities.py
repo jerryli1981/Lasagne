@@ -42,6 +42,9 @@ def softmax(x):
     """
     return theano.tensor.nnet.softmax(x)
 
+def logsoftmax(x):
+    
+    return theano.tensor.log(theano.tensor.nnet.softmax(x))
 
 # tanh
 def tanh(x):
