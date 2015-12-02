@@ -1,4 +1,5 @@
 import theano.tensor as T
+import theano
 
 from .base import MergeLayer
 
@@ -11,6 +12,7 @@ __all__ = [
     "ElemwiseMergeLayer",
     "ElemwiseSumLayer",
     "AbsSubLayer",
+    "CosineSimLayer",
 ]
 
 
@@ -435,4 +437,23 @@ class AbsSubLayer(MergeLayer):
             else:
                 output = input
         return T.abs_(output)
+
+class CosineSimLayer(MergeLayer):
+
+    def __init__(self, incomings, **kwargs):
+        '''
+        The inputs are expected to be a list of two 2D tensor of shape 
+        (num_batch, num_features). 
+        Compute the cosine distance between the two inputs such that 
+        (num_batch, )
+        '''
+        super(CosineSimLayer, self).__init__(incomings, **kwargs)
+     
+    def get_output_shape_for(self, input_shapes):
+        return tuple([input_shapes[1][0],input_shapes[1][1]])
+
+    def get_output_for(self, inputs, **kwargs):
+        cosine = (inputs[0]*inputs[1]).sum(axis=-1)/(T.sqrt(T.sum(T.sqr(inputs[0])) * T.sum(T.sqr(inputs[1]))))
+        return cosine
+        
 
